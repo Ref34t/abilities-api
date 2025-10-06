@@ -35,6 +35,15 @@ final class WP_Abilities_Registry {
 	private $registered_abilities = array();
 
 	/**
+	 * Holds the registered ability categories.
+	 *
+	 * @since N.E.X.T
+	 * @var \WP_Ability_Category[]
+	 * @phpstan-var array<string, \WP_Ability_Category>
+	 */
+	private $registered_categories = array();
+
+	/**
 	 * Registers a new ability.
 	 *
 	 * Do not use this method directly. Instead, use the `wp_register_ability()` function.
@@ -192,7 +201,7 @@ final class WP_Abilities_Registry {
 	 * @param string $name The name of the registered ability, with its namespace.
 	 * @return ?\WP_Ability The registered ability instance, or null if it is not registered.
 	 */
-	public function get_registered( string $name ): ?WP_Ability {
+	public function get_registered( string $name ): ?\WP_Ability {
 		if ( ! $this->is_registered( $name ) ) {
 			_doing_it_wrong(
 				__METHOD__,
@@ -203,6 +212,18 @@ final class WP_Abilities_Registry {
 			return null;
 		}
 		return $this->registered_abilities[ $name ];
+	}
+
+	/**
+	 * Retrieves all registered ability categories.
+	 *
+	 * @since N.E.X.T
+	 *
+	 * @return \WP_Ability_Category[] The array of registered ability categories.
+	 * @phpstan-return array<string, \WP_Ability_Category>
+	 */
+	public function get_all_registered_categories(): array {
+		return $this->registered_categories;
 	}
 
 	/**
@@ -232,6 +253,50 @@ final class WP_Abilities_Registry {
 		}
 
 		return self::$instance;
+	}
+
+	/**
+	 * Registers a new ability category.
+	 *
+	 * Do not use this method directly. Instead, use the `wp_register_ability_category()` function.
+	 *
+	 * @since N.E.X.T
+	 *
+	 * @see wp_register_ability_category()
+	 *
+	 * @param string              $id   The category ID.
+	 * @param array<string,mixed> $args The arguments for the category.
+	 * @return \WP_Ability_Category|null The registered category object, or null on failure.
+	 *
+	 * @phpstan-param array{
+	 *   label?: string,
+	 *   description?: string,
+	 *   ...<string, mixed>
+	 * } $args
+	 */
+	public function register_category( string $id, array $args ): ?\WP_Ability_Category {
+		if ( ! preg_match( '/^[a-z0-9-]+$/', $id ) ) {
+			_doing_it_wrong(
+				__METHOD__,
+				esc_html__( 'Category ID can only contain lowercase alphanumeric characters and dashes.' ),
+				'0.2.0'
+			);
+			return null;
+		}
+
+		if ( isset( $this->registered_categories[ $id ] ) ) {
+			_doing_it_wrong(
+				__METHOD__,
+				sprintf( esc_html__( 'Ability category "%s" is already registered.' ), $id ),
+				'0.2.0'
+			);
+			return null;
+		}
+
+		$category = new \WP_Ability_Category( $id, $args );
+		$this->registered_categories[ $id ] = $category;
+
+		return $category;
 	}
 
 	/**

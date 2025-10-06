@@ -544,4 +544,62 @@ class Tests_Abilities_API_WpAbilitiesRegistry extends WP_UnitTestCase {
 		$unfiltered_ability = $this->registry->register( 'test/another-ability', self::$test_ability_args );
 		$this->assertNotSame( $filtered_ability->get_label(), $unfiltered_ability->get_label(), 'The filter incorrectly modified the args for an ability it should not have.' );
 	}
+
+	/**
+	 * Should successfully register a new ability category.
+	 *
+	 * @covers WP_Abilities_Registry::register_category
+	 */
+	public function test_register_category_successfully() {
+		$category_id   = 'test-category';
+		$category_args = array(
+			'label'       => 'Test Category',
+			'description' => 'A category for testing.',
+		);
+		$category      = $this->registry->register_category( $category_id, $category_args );
+
+		$this->assertInstanceOf( 'WP_Ability_Category', $category );
+		$this->assertSame( $category_id, $category->id );
+		$this->assertSame( $category_args['label'], $category->label );
+
+		$all_categories = $this->registry->get_all_registered_categories();
+		$this->assertCount( 1, $all_categories );
+		$this->assertSame( $category, $all_categories[ $category_id ] );
+	}
+
+	/**
+	 * Should fail to register a category with a duplicate ID.
+	 *
+	 * @covers WP_Abilities_Registry::register_category
+	 * @expectedIncorrectUsage WP_Abilities_Registry::register_category
+	 */
+	public function test_register_duplicate_category_fails() {
+		$category_id   = 'test-category';
+		$category_args = array( 'label' => 'Test Category' );
+
+		// First registration should succeed.
+		$this->registry->register_category( $category_id, $category_args );
+
+		// Second registration with the same ID should fail.
+		$result = $this->registry->register_category( $category_id, $category_args );
+		$this->assertNull( $result );
+	}
+
+	/**
+	 * Should successfully register an ability with a valid category.
+	 *
+	 * @covers WP_Abilities_Registry::register
+	 */
+	public function test_register_ability_with_valid_category() {
+		$category_id   = 'test-math';
+		$category_args = array( 'label' => 'Math' );
+		$this->registry->register_category( $category_id, $category_args );
+
+		self::$test_ability_args['category_id'] = $category_id;
+		$ability = $this->registry->register( self::$test_ability_name, self::$test_ability_args );
+
+		$this->assertInstanceOf( 'WP_Ability', $ability );
+		$this->assertSame( $category_id, $ability->get_category_id() );
+	}
+
 }

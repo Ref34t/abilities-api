@@ -12,6 +12,27 @@
 declare( strict_types = 1 );
 
 /**
+ * Registers a new ability category.
+ *
+ * @since N.E.X.T
+ *
+ * @see WP_Abilities_Registry::register_category()
+ *
+ * @param string              $id   The category ID.
+ * @param array<string,string> $args The arguments for the category. Should include 'label' and 'description'.
+ * @return \WP_Ability_Category|null The registered category object, or null on failure.
+ *
+ * @phpstan-param array{
+ *  label?: string,
+ *  description?: string,
+ *  ...<string, mixed>
+ * } $args
+ */
+function wp_register_ability_category( string $id, array $args ): ?WP_Ability_Category {
+	return WP_Abilities_Registry::get_instance()->register_category( $id, $args );
+}
+
+/**
  * Registers a new ability using Abilities API.
  *
  * Note: Do not use before the {@see 'abilities_api_init'} hook.
@@ -31,6 +52,7 @@ declare( strict_types = 1 );
  * @phpstan-param array{
  *   label?: string,
  *   description?: string,
+ *   category_id?: string,
  *   execute_callback?: callable( mixed $input= ): (mixed|\WP_Error),
  *   permission_callback?: callable( mixed $input= ): (bool|\WP_Error),
  *   input_schema?: array<string,mixed>,

@@ -46,6 +46,14 @@ class WP_Ability {
 	protected $description;
 
 	/**
+	 * The category ID for the ability.
+	 *
+	 * @since N.E.X.T
+	 * @var string
+	 */
+	protected $category_id = '';
+
+	/**
 	 * The optional ability input schema.
 	 *
 	 * @since 0.1.0
@@ -145,6 +153,7 @@ class WP_Ability {
 	 *   description: string,
 	 *   execute_callback: callable( mixed $input= ): (mixed|\WP_Error),
 	 *   permission_callback: callable( mixed $input= ): (bool|\WP_Error),
+	 *   category_id?: string,
 	 *   input_schema?: array<string,mixed>,
 	 *   output_schema?: array<string,mixed>,
 	 *   meta?: array<string,mixed>,
@@ -178,6 +187,12 @@ class WP_Ability {
 		}
 
 		// Optional args only need to be of the correct type if they are present.
+		if ( isset( $args['category_id'] ) && ! is_string( $args['category_id'] ) ) {
+			throw new \InvalidArgumentException(
+				esc_html__( 'The ability properties must provide a valid `category_id` string.' )
+			);
+		}
+
 		if ( isset( $args['input_schema'] ) && ! is_array( $args['input_schema'] ) ) {
 			throw new \InvalidArgumentException(
 				esc_html__( 'The ability properties should provide a valid `input_schema` definition.' )
@@ -231,6 +246,17 @@ class WP_Ability {
 	 */
 	public function get_description(): string {
 		return $this->description;
+	}
+
+	/**
+	 * Retrieves the category ID for the ability.
+	 *
+	 * @since N.E.X.T
+	 *
+	 * @return string The category ID.
+	 */
+	public function get_category_id(): string {
+		return $this->category_id;
 	}
 
 	/**
